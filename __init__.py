@@ -12,22 +12,23 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name" : "BlenderStats",
+    "name" : "Blender Stats",
     "author" : "McAlpine Free Ltd",
-    "description" : "",
+    "description" : "Addon to send stats to blenderstats.com",
     "blender" : (2, 80, 0),
     "version" : (0, 0, 1),
-    "location" : "",
+    "location" : "View3D > Sidevar > Blender Stats",
     "warning" : "",
-    "category" : "Generic"
+    "category" : "3D View"
 }
 
-from . import auto_load
-
-auto_load.init()
+import bpy
+from .panels.panel import BlenderStatsMainPanel, BlenderStatsSubPanel
 
 def register():
-    auto_load.register()
+    bpy.utils.register_class(BlenderStatsMainPanel)
+    bpy.utils.register_class(BlenderStatsSubPanel)
 
 def unregister():
-    auto_load.unregister()
+    bpy.utils.unregister_class(BlenderStatsMainPanel)
+    bpy.utils.unregister_class(BlenderStatsSubPanel)
