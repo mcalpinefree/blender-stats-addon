@@ -23,12 +23,16 @@ bl_info = {
 }
 
 import bpy
-from .panels.panel import BlenderStatsMainPanel, BlenderStatsSubPanel
+from .panels.panel import BlenderStatsMainPanel, BlenderStatsProjectPanel
+from .operators.buttons import CollectStats
 
 def register():
     bpy.utils.register_class(BlenderStatsMainPanel)
-    bpy.utils.register_class(BlenderStatsSubPanel)
+    bpy.utils.register_class(BlenderStatsProjectPanel)
+    bpy.utils.register_class(CollectStats)
+
 
 def unregister():
     bpy.utils.unregister_class(BlenderStatsMainPanel)
-    bpy.utils.unregister_class(BlenderStatsSubPanel)
+    bpy.utils.unregister_class(BlenderStatsProjectPanel)
+    bpy.utils.unregister_class(CollectStats)
