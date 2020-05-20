@@ -61,6 +61,7 @@ jobs:
         - get: src
           trigger: true
         - get: version
+          params: {bump: patch}
         - get: tasks
       - task: bump-version
         file: tasks/semver/tasks/bump-version.yml
