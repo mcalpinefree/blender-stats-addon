@@ -24,16 +24,14 @@ bl_info = {
 }
 
 import bpy
-from .panels.panel import BlenderStatsMainPanel, BlenderStatsProjectPanel
-from .operators.buttons import CollectStats
+from . import panels
+from . import operators
 
 def register():
-    bpy.utils.register_class(BlenderStatsMainPanel)
-    bpy.utils.register_class(BlenderStatsProjectPanel)
-    bpy.utils.register_class(CollectStats)
+    panels.register()
+    operators.register()
 
 
 def unregister():
-    bpy.utils.unregister_class(BlenderStatsMainPanel)
-    bpy.utils.unregister_class(BlenderStatsProjectPanel)
-    bpy.utils.unregister_class(CollectStats)
+    panels.unregister()
+    operators.unregister()
