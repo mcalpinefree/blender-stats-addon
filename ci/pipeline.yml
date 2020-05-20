@@ -1,0 +1,144 @@
+---
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: teliaoss/github-pr-resource
+
+resources:
+  - name: tasks
+    type: git
+    source:
+      uri: git@github.com:mcalpinefree/concourse-tasks.git
+      private_key: |
+        ((ssh-private-key))
+  - name: ci
+    type: git
+    source:
+      uri: https://github.com/mcalpinefree/blender-stats-addon.git
+      branch: master
+      paths:
+        - ci
+  - name: src
+    type: git
+    source:
+      uri: git@github.com:mcalpinefree/blender-stats-addon.git
+      branch: master
+      private_key: |
+        ((ssh-private-key))
+      ignore_paths:
+        - ci
+  # - name: pull-request
+  #   type: pull-request
+  #   check_every: 24h
+  #   webhook_token: ((github-webhook-token))
+  #   source:
+  #     repository: mcalpinefree/blender-stats-addon
+  #     access_token: ((github-token))
+  - name: version
+    type: semver
+    source:
+      driver: s3
+      bucket: mcalpinefree-concourse-semver
+      key: blender-stats-addon/release
+      access_key_id: ((tools-aws-access-key-id))
+      secret_access_key: ((tools-aws-secret-access-key))
+      region_name: ap-southeast-2
+      initial_version: 0.0.0
+  - name: gh-release
+    type: github-release
+    source:
+      owner: mcalpinefree
+      repository: blender-stats-addon
+      access_token: ((github-token))
+
+jobs:
+
+  - name: release
+    serial: true
+    plan:
+      - in_parallel:
+        - get: src
+          trigger: true
+        - get: version
+        - get: tasks
+      - task: bump-version
+        file: tasks/semver/tasks/bump-version.yml
+      - task: zip
+        input_mapping:
+          version: bump
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: alpine
+          inputs:
+            - name: src
+            - name: version
+          outputs:
+            - name: zip
+            - name: meta
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                #!/bin/sh
+                VERSION=$(cat version/version)
+                apk add zip
+                cd src
+                zip blender-stats-addon-${VERSION}.zip $(ls | grep -ve ci -ve semver.version)
+                mv blender-stats-addon-${VERSION}.zip ../zip/
+                cd ..
+                ls -lah zip
+
+                echo "Blender Stats Addon ${VERSION}" > meta/name
+      - in_parallel:
+        - put: version
+          params:
+            file: bump/version
+        - put: src
+          params:
+            repository: src
+            tag: bump/version
+            only_tag: true
+      - put: gh-release
+        params:
+          name: meta/name
+          tag: bump/version
+          globs: [zip/*.zip]
+
+
+# TODO run tests for PR
+#  - name: pull-request
+#    serial: true
+#    plan:
+#      - in_parallel:
+#        - get: pull-request
+#          version: every
+#          trigger: true
+#      - put: pull-request
+#        params:
+#          path: pull-request
+#          status: pending
+#        on_failure:
+#          in_parallel:
+#            - put: pull-request
+#              params:
+#                path: pull-request
+#                status: failure
+#        on_success:
+#          put: pull-request
+#          params:
+#            path: pull-request
+#            status: success
+#
+
+  - name: set-pipeline
+    serial: true
+    plan:
+      - get: ci
+        trigger: true
+      - set_pipeline: blender-stats-addon
+        file: ci/ci/pipeline.yml
