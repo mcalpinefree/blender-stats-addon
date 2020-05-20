@@ -85,14 +85,14 @@ jobs:
               - -c
               - |
                 #!/bin/sh
-                VERSION=$(cat version/version)
                 apk add zip
-                cd src
-                zip blender-stats-addon-${VERSION}.zip $(ls | grep -ve ci -ve semver.version)
-                mv blender-stats-addon-${VERSION}.zip ../zip/
-                cd ..
+                VERSION=$(cat version/version)
+                MAJOR=$(echo $VERSION | cut -d. -f1)
+                MINOR=$(echo $VERSION | cut -d. -f2)
+                PATCH=$(echo $VERSION | cut -d. -f3)
+                sed -i 's/.*"version".*/    "version": ('$MAJOR', '$MINOR', '$PATCH'),/g' src/__init__.py
+                zip -r zip/blender-stats-addon-${VERSION}.zip src/ -x src/ci\* -x src/semver.version -x src/.git\*
                 ls -lah zip
-
                 echo "Blender Stats Addon ${VERSION}" > meta/name
       - in_parallel:
         - put: version
