@@ -16,6 +16,7 @@ bl_info = {
     "author" : "McAlpine Free Ltd",
     "description" : "Addon to send stats to blenderstats.com",
     "blender" : (2, 80, 0),
+    # version field will be overwritten by concourse ci when released
     "version" : (0, 0, 1),
     "location" : "View3D > Sidevar > Blender Stats",
     "warning" : "",
