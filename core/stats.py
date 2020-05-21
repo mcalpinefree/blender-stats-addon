@@ -1,7 +1,12 @@
 import bpy
 
-class SnapshotStats:
+class Stats:
+    pass
+
+class SnapshotStats(Stats):
     stats = {}
+
+    
     def collect(self):
 
         #count things
@@ -15,4 +20,7 @@ class SnapshotStats:
 
         #version things
         self.stats['blender_version'] = bpy.data.version
-        print(self.stats)
+        
+
+class OngoingStats(Stats):
+    pass

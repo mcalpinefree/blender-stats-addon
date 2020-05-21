@@ -1,6 +1,7 @@
 
 import bpy
 from ..core.stats import SnapshotStats
+from ..core.stats_queue import StatsQueue
 
 
 class CollectStats(bpy.types.Operator):
@@ -10,4 +11,5 @@ class CollectStats(bpy.types.Operator):
     def execute(self, context):
         stats = SnapshotStats()
         stats.collect()
+        StatsQueue.add(stats)
         return {'FINISHED'}
