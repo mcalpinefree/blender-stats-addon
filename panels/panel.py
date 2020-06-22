@@ -15,6 +15,7 @@ class BlenderStatsMainPanel(BlenderStatsBasePanel, bpy.types.Panel):
         row = self.layout.row()
         row.label(text="Current project:")
         row.label(text="Test Project")
+        self.layout.operator('file.login')
         self.layout.operator('file.collectstats')
 
 class BlenderStatsProjectPanel(BlenderStatsBasePanel, bpy.types.Panel):

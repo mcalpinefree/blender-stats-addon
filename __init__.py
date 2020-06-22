@@ -26,12 +26,15 @@ bl_info = {
 import bpy
 from . import panels
 from . import operators
+from .preferences import Preferences
 
 def register():
+    bpy.utils.register_class(Preferences)
     panels.register()
     operators.register()
 
 
 def unregister():
+    bpy.utils.unregister_class(Preferences)
     panels.unregister()
     operators.unregister()
