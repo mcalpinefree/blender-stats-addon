@@ -17,6 +17,12 @@ class Preferences(bpy.types.AddonPreferences):
         name="Login State",
         default = "out"
     )
+    
+    token: StringProperty(
+        name="Cognito Token",
+        default = "",
+        maxlen = 1000,
+    )
 
     def draw(self, context):
         layout = self.layout

@@ -18,7 +18,7 @@ class BlenderStatsMainPanel(BlenderStatsBasePanel, bpy.types.Panel):
         
         if (login_state == "out"): 
             self.layout.label(text="Please log in:")
-            self.layout.operator('file.login')
+            self.layout.operator('file.logintest')
         elif (login_state == "processing"):
             self.layout.label(text="Please log in in the browser...")
         elif (login_state == "in"):
