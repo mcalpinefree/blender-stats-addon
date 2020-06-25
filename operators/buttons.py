@@ -47,16 +47,18 @@ class Login(bpy.types.Operator):
             cognito = json.loads(self.cognito['token'])
             self.httpd.shutdown()
 
-            # demo api usage
-            r = requests.get("https://api.blender-stats.staging.mcalpinefree.io/user",
-                             headers={"Authorization": "Bearer " + cognito['id_token']})
-            user = json.loads(r.content)
-            print("Hello {}!".format(user["name"]))
-
             preferences = context.preferences
             addon_prefs = preferences.addons[Preferences.bl_idname].preferences
             addon_prefs.loginstate = "in"
             addon_prefs.token = self.cognito['token'].decode("utf-8")
+
+            cognito = json.loads(addon_prefs.token)
+            r = requests.get("https://api.blender-stats.staging.mcalpinefree.io/user",
+                             headers={"Authorization": "Bearer " + cognito['id_token']})
+            user = json.loads(r.content)
+            print("Hello {}!".format(user["name"]))
+            addon_prefs.name = user["name"]
+
             return {'FINISHED'}
 
         return {'PASS_THROUGH'}

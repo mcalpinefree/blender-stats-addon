@@ -1,6 +1,7 @@
 import bpy
 from bpy.props import StringProperty, EnumProperty
 
+
 class Preferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
@@ -9,19 +10,26 @@ class Preferences(bpy.types.AddonPreferences):
     )
 
     loginstate: EnumProperty(
-        items = [
+        items=[
             ("out", "Logged out", "User is logged out"),
             ("in", "Logged in", "User is logged in"),
-            ("processing", "Processing login", "User has requested login and awaiting user input")
+            ("processing", "Processing login",
+             "User has requested login and awaiting user input")
         ],
         name="Login State",
-        default = "out"
+        default="out"
     )
-    
+
     token: StringProperty(
         name="Cognito Token",
-        default = "",
-        maxlen = 1000,
+        default="",
+        maxlen=5000,
+    )
+
+    name: StringProperty(
+        name="User name",
+        default="",
+        maxlen=300,
     )
 
     def draw(self, context):
