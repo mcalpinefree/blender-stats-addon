@@ -3,6 +3,7 @@ import bpy
 import json
 import requests
 from ..preferences import Preferences
+from ..core.user import User
 
 
 class BlenderStatsBasePanel:
@@ -19,16 +20,16 @@ class BlenderStatsMainPanel(BlenderStatsBasePanel, bpy.types.Panel):
         preferences = context.preferences
         addon_prefs = preferences.addons[Preferences.bl_idname].preferences
         login_state = addon_prefs.loginstate
-        name = addon_prefs.name
 
         if (login_state == "out"):
             self.layout.label(text="Please log in:")
-            self.layout.operator('file.logintest')
+            self.layout.operator('file.start_login')
         elif (login_state == "processing"):
             self.layout.label(text="Please log in in the browser...")
         elif (login_state == "in"):
-            print("display logged in")
-            self.layout.label(text="Logged in: {}".format(name))
+            user = User.get_local_user(addon_prefs)
+            self.layout.label(text="Logged in: {}".format(user.name))
+            self.layout.operator('file.logout')
             row = self.layout.row()
             row.label(text="Current project:")
             row.label(text="Test Project")

@@ -6,6 +6,7 @@ from ..core.stats import SnapshotStats
 from ..core.stats_queue import StatsQueue
 from ..core.auth import Authenticator
 from ..preferences import Preferences
+from ..core.user import User
 
 
 class CollectStats(bpy.types.Operator):
@@ -20,20 +21,31 @@ class CollectStats(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class LoginTest(bpy.types.Operator):
-    '''Login'''
-    bl_idname = "file.logintest"
-    bl_label = "Login Stats"
+class StartLogin(bpy.types.Operator):
+    '''Login to blenderstats.com'''
+    bl_idname = "file.start_login"
+    bl_label = "Login"
 
     def execute(self, context):
-        bpy.ops.object.login('INVOKE_DEFAULT')
+        bpy.ops.object.login_manager('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+class Logout(bpy.types.Operator):
+    '''Logout'''
+    bl_idname = "file.logout"
+    bl_label = "Logout"
+
+    def execute(self, context):
+        preferences = context.preferences
+        addon_prefs = preferences.addons[Preferences.bl_idname].preferences
+        addon_prefs.loginstate = "out"
         return {'FINISHED'}
 
 
-class Login(bpy.types.Operator):
-    '''Login to blenderstats.com'''
-    bl_idname = "object.login"
-    bl_label = "Login"
+class LoginManager(bpy.types.Operator):
+    '''Manage login process'''
+    bl_idname = "object.login_manager"
+    bl_label = "Manage Login"
 
     def __init__(self):
         self.httpd = None
@@ -50,14 +62,12 @@ class Login(bpy.types.Operator):
             preferences = context.preferences
             addon_prefs = preferences.addons[Preferences.bl_idname].preferences
             addon_prefs.loginstate = "in"
-            addon_prefs.token = self.cognito['token'].decode("utf-8")
+            addon_prefs.user_token = self.cognito['token'].decode("utf-8")
 
-            cognito = json.loads(addon_prefs.token)
-            r = requests.get("https://api.blender-stats.staging.mcalpinefree.io/user",
-                             headers={"Authorization": "Bearer " + cognito['id_token']})
-            user = json.loads(r.content)
-            print("Hello {}!".format(user["name"]))
-            addon_prefs.name = user["name"]
+            cognito = json.loads(addon_prefs.user_token)
+
+            user = User.get_user_online(cognito['id_token'])
+            user.save_as_current_user(addon_prefs)
 
             return {'FINISHED'}
 

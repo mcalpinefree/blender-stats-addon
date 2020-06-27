@@ -20,13 +20,19 @@ class Preferences(bpy.types.AddonPreferences):
         default="out"
     )
 
-    token: StringProperty(
+    user_token: StringProperty(
         name="Cognito Token",
         default="",
         maxlen=5000,
     )
 
-    name: StringProperty(
+    user_id: StringProperty(
+        name="User Id",
+        default = "",
+        maxlen = 300,
+    )
+
+    user_name: StringProperty(
         name="User name",
         default="",
         maxlen=300,
