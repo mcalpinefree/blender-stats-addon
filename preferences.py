@@ -1,6 +1,5 @@
 import bpy
-from bpy.props import StringProperty, EnumProperty
-
+from bpy.props import StringProperty, EnumProperty, CollectionProperty
 
 class Preferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -36,6 +35,12 @@ class Preferences(bpy.types.AddonPreferences):
         name="User name",
         default="",
         maxlen=300,
+    )
+ 
+    projects: StringProperty(
+        name="Project IDs",
+        default = "[]",
+        maxlen=5000,
     )
 
     def draw(self, context):

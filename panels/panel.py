@@ -43,4 +43,10 @@ class BlenderStatsProjectPanel(BlenderStatsBasePanel, bpy.types.Panel):
     bl_label = "Projects"
 
     def draw(self, context):
-        self.layout.label(text="This will be a list of projects")
+        preferences = context.preferences
+        addon_prefs = preferences.addons[Preferences.bl_idname].preferences
+        user = User.get_local_user(addon_prefs)
+
+        for project in user.projects:
+            self.layout.label(text=project["name"])
+
