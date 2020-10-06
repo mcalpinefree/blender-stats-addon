@@ -29,6 +29,9 @@ from . import operators
 from .preferences import Preferences
 
 def register():
+    # forces the AddonPreferences to be autosaved: https://blender.stackexchange.com/questions/157677/add-on-preferences-auto-saving-bug
+    # this may not be the best solution
+    bpy.context.preferences.use_preferences_save = True
     bpy.utils.register_class(Preferences)
     panels.register()
     operators.register()
