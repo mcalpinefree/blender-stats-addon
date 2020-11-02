@@ -11,7 +11,10 @@ addons_path = path.join(user_path, "scripts/addons")
 blender_stats_installed_path = path.join(addons_path, "blender-stats-addon")
 
 if path.exists(blender_stats_installed_path):
-    shutil.rmtree(blender_stats_installed_path)
+    if path.islink(blender_stats_installed_path):
+        os.unlink(blender_stats_installed_path)
+    else:
+        shutil.rmtree(blender_stats_installed_path)
 
 shutil.copytree(current_dir, blender_stats_installed_path)
 

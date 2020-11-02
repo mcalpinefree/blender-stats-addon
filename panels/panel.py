@@ -1,9 +1,11 @@
 
+import pprint
 import bpy
 import json
 import requests
-from ..preferences import Preferences
 from ..core.user import User
+from ..preferences import Preferences
+from ..settings import Settings
 
 
 class BlenderStatsBasePanel:
@@ -19,7 +21,9 @@ class BlenderStatsMainPanel(BlenderStatsBasePanel, bpy.types.Panel):
     def draw(self, context):
         preferences = context.preferences
         addon_prefs = preferences.addons[Preferences.bl_idname].preferences
+
         login_state = addon_prefs.loginstate
+        user_token = addon_prefs.user_token
 
         if (login_state == "out"):
             self.layout.label(text="Please log in:")
@@ -30,9 +34,6 @@ class BlenderStatsMainPanel(BlenderStatsBasePanel, bpy.types.Panel):
             user = User.get_local_user(addon_prefs)
             self.layout.label(text="Logged in: {}".format(user.name))
             self.layout.operator('file.logout')
-            row = self.layout.row()
-            row.label(text="Current project:")
-            row.label(text="Test Project")
             self.layout.operator('file.collectstats')
         else:
             self.layout.label(text="Something went wrong, unknown login state")
@@ -46,7 +47,16 @@ class BlenderStatsProjectPanel(BlenderStatsBasePanel, bpy.types.Panel):
         preferences = context.preferences
         addon_prefs = preferences.addons[Preferences.bl_idname].preferences
         user = User.get_local_user(addon_prefs)
+        settings = Settings()
 
-        for project in user.projects:
-            self.layout.label(text=project["name"])
+        row = self.layout.row()
+        selected_project_id = settings.get_str("selected_project_id")
+        if selected_project_id != "":
+            row.label(text="Current project:")
+            for project in user.projects:
+                if selected_project_id == project["id"]:
+                    row.label(text=project["name"])
+        else:
+            row.label(text="Please select a project")
 
+        self.layout.operator('file.selectproject')

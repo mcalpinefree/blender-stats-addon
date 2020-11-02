@@ -1,6 +1,7 @@
 import bpy
 from bpy.props import StringProperty, EnumProperty, CollectionProperty
 
+
 class Preferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
@@ -27,8 +28,8 @@ class Preferences(bpy.types.AddonPreferences):
 
     user_id: StringProperty(
         name="User Id",
-        default = "",
-        maxlen = 300,
+        default="",
+        maxlen=300,
     )
 
     user_name: StringProperty(
@@ -36,10 +37,10 @@ class Preferences(bpy.types.AddonPreferences):
         default="",
         maxlen=300,
     )
- 
+
     projects: StringProperty(
         name="Project IDs",
-        default = "[]",
+        default="[]",
         maxlen=5000,
     )
 

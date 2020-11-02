@@ -1,13 +1,16 @@
 
+import pprint
 import bpy
 import json
 import requests
 from datetime import datetime
+from ..core.auth import Authenticator
 from ..core.stats import SnapshotStats
 from ..core.stats_queue import StatsQueue
-from ..core.auth import Authenticator
-from ..preferences import Preferences
 from ..core.user import User
+from ..logger import Logger
+from ..preferences import Preferences
+from ..settings import Settings
 
 
 class CollectStats(bpy.types.Operator):
@@ -109,3 +112,49 @@ class LoginManager(bpy.types.Operator):
         self.httpd = auth.start_login_process(self.cognito)
         bpy.ops.wm.url_open(url=Authenticator.login_url)
         return {'RUNNING_MODAL'}
+
+
+def items_cb(self, context):
+    preferences = context.preferences
+    addon_prefs = preferences.addons[Preferences.bl_idname].preferences
+    user = User.get_local_user(addon_prefs)
+
+    projects = []
+    for project in user.projects:
+        projects.append((project["id"], project["name"], project["name"]))
+
+    return projects
+
+
+def update_cb(self, context):
+    print("Updated:", self.dyn_list)
+
+
+class SelectProject(bpy.types.Operator):
+    '''Select current project'''
+    bl_idname = "file.selectproject"
+    bl_label = "Select Project"
+
+    project_enum = bpy.props.EnumProperty(
+        name="Project",
+        items=items_cb,
+        update=update_cb
+    )
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context):
+        layout = self.layout
+        logger = Logger()
+        layout.prop(self, "project_enum")
+
+    def execute(self, context):
+        logger = Logger()
+        settings = Settings()
+        logger.debug("previously selected project: {}\n".format(
+            settings.get_str("selected_project_id")))
+        logger.debug("selected project: {}\n".format(self.project_enum))
+        settings.set_str("selected_project_id", self.project_enum)
+        return {'FINISHED'}
