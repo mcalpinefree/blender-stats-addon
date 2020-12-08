@@ -10,6 +10,10 @@ import socketserver
 import threading
 import time
 
+from ..logger import Logger
+
+COGNITO_ENDPOINT = "https://blender-stats-staging.auth.ap-southeast-2.amazoncognito.com"
+COGNITO_CLIENT_ID = "5guehm086k0ur6mb59spbovuqv"
 PORT = 41669
 HTML = """
 <!DOCTYPE html>
@@ -25,14 +29,17 @@ HTML = """
     <p id="status">Setting up...</p>
 
     <script>
+        function getParameterByName(name, url = window.location.href) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
         window.onload = function() {
-            var cognitoToken = {};
-            urlFragment = window.location.hash.replace(/^#/,"");
-            fragments = urlFragment.split("&");
-            for (i = 0; i < fragments.length; i++) {
-                s = fragments[i].split("=");
-                cognitoToken[s[0]] = s[1];
-            }
+            var code = getParameterByName('code');
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 201) {
@@ -40,7 +47,8 @@ HTML = """
                 }
             };
             xhttp.open("PUT", "", true);
-            xhttp.send(JSON.stringify(cognitoToken));
+            xhttp.send(JSON.stringify({code}));
+            console.log(code);
         }
     </script>
 </body>
@@ -61,9 +69,23 @@ def MakeHandler(cognito):
             return
 
         def do_PUT(self):
+            logger = Logger()
+
             content_len = int(self.headers.get('Content-Length'))
             body = self.rfile.read(content_len)
-            cognito["token"] = body
+
+            cognito_code = json.loads(body)
+            code = cognito_code["code"]
+            logger.debug("code: {}".format(code))
+            oauth_url = "{}/oauth2/token?grant_type=authorization_code&code={}&redirect_uri=http://localhost:{}&client_id={}".format(
+                COGNITO_ENDPOINT, code, PORT, COGNITO_CLIENT_ID)
+            x = requests.post(oauth_url,  headers={
+                              "Content-Type": "application/x-www-form-urlencoded"})
+            logger.debug("response: {}".format(x.text))
+
+            tokens = json.loads(x.text)
+
+            cognito["tokens"] = tokens
             self.send_response(201)
             self.end_headers()
 
@@ -73,8 +95,8 @@ def MakeHandler(cognito):
 
 class Authenticator:
 
-    login_url = "https://blender-stats-staging.auth.ap-southeast-2.amazoncognito.com/login?response_type=token&client_id=5guehm086k0ur6mb59spbovuqv&redirect_uri=http://localhost:" + \
-        str(PORT)
+    login_url = "{}/login?response_type=code&client_id={}&redirect_uri=http://localhost:{}".format(
+        COGNITO_ENDPOINT, COGNITO_CLIENT_ID, PORT)
 
     def start_login_process(self, cognito):
         self.httpd = http.server.HTTPServer(("", PORT), MakeHandler(cognito))

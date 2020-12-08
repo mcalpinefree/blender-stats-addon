@@ -49,6 +49,7 @@ class CollectStats(bpy.types.Operator):
                                     "count_item": key})
 
         StatsQueue.add(stats)
+
         return {'FINISHED'}
 
 
@@ -87,14 +88,14 @@ class LoginManager(bpy.types.Operator):
         return {'FINISHED'}
 
     def modal(self, context, event):
-        if "token" in self.cognito:
-            cognito = json.loads(self.cognito['token'])
+        if "tokens" in self.cognito:
+            cognito = self.cognito['tokens']
             self.httpd.shutdown()
 
             preferences = context.preferences
             addon_prefs = preferences.addons[Preferences.bl_idname].preferences
             addon_prefs.loginstate = "in"
-            addon_prefs.user_token = self.cognito['token'].decode("utf-8")
+            addon_prefs.user_token = json.dumps(self.cognito['tokens'])
 
             cognito = json.loads(addon_prefs.user_token)
 
