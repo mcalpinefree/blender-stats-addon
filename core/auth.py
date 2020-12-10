@@ -9,6 +9,7 @@ import requests
 import socketserver
 import threading
 import time
+from datetime import datetime, timedelta
 
 from ..logger import Logger
 
@@ -83,9 +84,11 @@ def MakeHandler(cognito):
                               "Content-Type": "application/x-www-form-urlencoded"})
             logger.debug("response: {}".format(x.text))
 
-            tokens = json.loads(x.text)
+            response = json.loads(x.text)
+            response["expiration_date"] = datetime.now(
+            ) + timedelta(seconds=response["expires_in"])
 
-            cognito["tokens"] = tokens
+            cognito["tokens"] = response
             self.send_response(201)
             self.end_headers()
 

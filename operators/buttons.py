@@ -52,7 +52,6 @@ class CollectStats(bpy.types.Operator):
 
         return {'FINISHED'}
 
-
 class StartLogin(bpy.types.Operator):
     '''Login to blenderstats.com'''
     bl_idname = "file.start_login"
